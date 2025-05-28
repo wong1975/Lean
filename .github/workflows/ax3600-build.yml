@@ -1,0 +1,71 @@
+name: 编译小米 AX3600 固件
+
+on:
+  push:
+    branches:
+      - main # 推送到 main 分支时触发
+    paths:
+      - '.config' # 当 .config 文件发生变化时触发
+      - '.github/workflows/ax3600-build.yml' # 当工作流文件本身发生变化时触发
+  schedule:
+    - cron: '0 0 * * 0' # 每周日午夜定时触发编译
+  workflow_dispatch: # 允许手动触发工作流
+
+jobs:
+  编译:
+    runs-on: ubuntu-latest # 使用最新的 Ubuntu 系统作为运行环境
+
+    steps:
+      - name: 检出仓库代码
+        uses: actions/checkout@v3
+
+      - name: 设置编译环境
+        run: |
+          sudo apt update -y
+          sudo apt full-upgrade -y
+          sudo apt install -y ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential \
+          bzip2 ccache clang cmake cpio curl device-tree-compiler flex gawk gcc-multilib g++-multilib gettext \
+          genisoimage git gperf haveged help2man intltool libc6-dev-i386 libelf-dev libfuse-dev libglib2.0-dev \
+          libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev libncurses5-dev libncursesw5-dev libpython3-dev \
+          libreadline-dev libssl-dev libtool llvm lrzsz msmtp ninja-build p7zip p7zip-full patch pkgconf \
+          python3 python3-pyelftools python3-setuptools qemu-utils rsync scons squashfs-tools subversion \
+          swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev
+
+      - name: 克隆 LEDE 源码
+        run: git clone https://github.com/coolsnowwolf/lede.git lede_source # 克隆 coolsnowwolf 的 LEDE 源码到 lede_source 目录
+
+      - name: 准备 LEDE 编译环境
+        working-directory: ./lede_source # 进入 lede_source 目录
+        run: |
+          ./scripts/feeds update -a # 更新 feeds
+          ./scripts/feeds install -a # 安装 feeds
+          # 复制 .config 配置文件到 lede_source 目录
+          # 假设 .config 文件位于仓库根目录，并命名为 xiaomi_ax3600.config
+          cp ../xiaomi_ax3600.config .config # 复制配置文件
+          make defconfig # 生成默认配置
+
+      - name: 下载依赖包
+        working-directory: ./lede_source # 进入 lede_source 目录
+        run: make download -j$(nproc) # 使用多线程下载
+
+      - name: 编译固件
+        working-directory: ./lede_source # 进入 lede_source 目录
+        run: |
+          echo "使用 $(nproc) 核心进行编译"
+          make V=s -j$(nproc) # 使用多线程编译，并显示详细日志 (V=s)
+
+      - name: 打包固件
+        run: |
+          mkdir -p firmware_output # 创建固件输出目录
+          # 根据实际编译输出调整路径和文件名
+          # 通常固件位于 lede_source/bin/targets/ipq807x/generic/ 目录下
+          find lede_source/bin/targets/ -type f -name "*ax3600*" -exec cp {} firmware_output/ \; # 查找并复制 AX3600 相关的固件文件
+          find lede_source/bin/targets/ -type f -name "*.buildinfo" -exec cp {} firmware_output/ \; # 复制编译信息文件
+          find lede_source/bin/targets/ -type f -name "*manifest*" -exec cp {} firmware_output/ \; # 复制 manifest 文件
+          find lede_source/bin/packages/ -type f -name "*luci-app-ssr-plus*" -exec cp {} firmware_output/ \; # 示例：打包特定的 ipk 软件包，例如 luci-app-ssr-plus
+
+      - name: 上传固件产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: ax3600-固件-${{ github.run_id }} # 上传的固件文件名，包含运行 ID
+          path: firmware_output/ # 上传 firmware_output 目录下的所有文件
