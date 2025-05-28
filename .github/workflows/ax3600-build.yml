@@ -13,11 +13,11 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest # 使用最新的 Ubuntu 系统作为运行环境
+    runs-on: ubuntu-24.04 # 使用 Ubuntu 24.04 LTS 作为运行环境
 
     steps:
       - name: 检出仓库代码
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: 设置编译环境
         run: |
@@ -52,16 +52,17 @@ jobs:
         working-directory: ./lede_source # 进入 lede_source 目录
         run: |
           echo "使用 $(nproc) 核心进行编译"
-          make V=s -j$(nproc) # 使用多线程编译，并显示详细日志 (V=s)
+          make V=s -j$(nproc) || make V=s -j1 # 使用多线程编译，失败则尝试单线程编译，并显示详细日志 (V=s)
 
       - name: 打包固件
         run: |
           mkdir -p firmware_output # 创建固件输出目录
           # 根据实际编译输出调整路径和文件名
           # 通常固件位于 lede_source/bin/targets/ipq807x/generic/ 目录下
-          find lede_source/bin/targets/ -type f -name "*ax3600*" -exec cp {} firmware_output/ \; # 查找并复制 AX3600 相关的固件文件
-          find lede_source/bin/targets/ -type f -name "*.buildinfo" -exec cp {} firmware_output/ \; # 复制编译信息文件
-          find lede_source/bin/targets/ -type f -name "*manifest*" -exec cp {} firmware_output/ \; # 复制 manifest 文件
+          # 确保查找路径的准确性，特别是针对 ipq807x 平台
+          find lede_source/bin/targets/ipq807x/generic/ -type f -name "*ax3600*" -exec cp {} firmware_output/ \; # 查找并复制 AX3600 相关的固件文件
+          find lede_source/bin/targets/ipq807x/generic/ -type f -name "*.buildinfo" -exec cp {} firmware_output/ \; # 复制编译信息文件
+          find lede_source/bin/targets/ipq807x/generic/ -type f -name "*manifest*" -exec cp {} firmware_output/ \; # 复制 manifest 文件
           find lede_source/bin/packages/ -type f -name "*luci-app-ssr-plus*" -exec cp {} firmware_output/ \; # 示例：打包特定的 ipk 软件包，例如 luci-app-ssr-plus
 
       - name: 上传固件产物
