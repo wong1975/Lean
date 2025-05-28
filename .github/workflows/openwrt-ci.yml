@@ -62,6 +62,11 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
+      - name: Load custom configuration for XiaoMi AX3600
+        run: |
+          cp xiaomi_ax3600.config .config
+          make defconfig
+
       - name: Generate configuration file
         run: make defconfig
 
@@ -91,17 +96,17 @@ jobs:
       - name: Upload buildinfo
         uses: actions/upload-artifact@v4
         with:
-          name: OpenWrt_buildinfo
+          name: OpenWrt_buildinfo_AX3600
           path: ./artifact/buildinfo/
 
       - name: Upload package
         uses: actions/upload-artifact@v4
         with:
-          name: OpenWrt_package
+          name: OpenWrt_package_AX3600
           path: ./artifact/package/
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
-          name: OpenWrt_firmware
+          name: OpenWrt_firmware_AX3600
           path: ./bin/targets/
