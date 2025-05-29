@@ -66,11 +66,21 @@ jobs:
           sed -i 's/#src-git helloworld/src-git helloworld/g' ./feeds.conf.default
           ./scripts/feeds update -a
           ./scripts/feeds install -a
-        
+
+      # SSH 远程调试（tmate），可手动 make menuconfig
+      - name: SSH 远程调试（tmate）进入 menuconfig
+        if: ${{ github.event.inputs.manual_config == 'y' }}
+        uses: mxschmitt/action-tmate@v3
+
+      - name: Upload .config
+        uses: actions/upload-artifact@v4
+        with:
+          name: config
+          path: .config
+
       - name: Generate configuration file
         run: make defconfig
 
-        
       - name: Download packages
         run: make download -j16
 
