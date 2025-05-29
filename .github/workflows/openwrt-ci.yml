@@ -23,6 +23,11 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
+      # SSH 远程调试（tmate），自动进入 make menuconfig
+      - name: SSH 远程调试（tmate）进入 menuconfig
+        if: ${{ github.event.inputs.manual_config == 'y' }}
+        uses: mxschmitt/action-tmate@v3
+        
       - name: Space cleanup and Initialization environment
         env:
           DEBIAN_FRONTEND: noninteractive
@@ -61,12 +66,6 @@ jobs:
           sed -i 's/#src-git helloworld/src-git helloworld/g' ./feeds.conf.default
           ./scripts/feeds update -a
           ./scripts/feeds install -a
-
-        
-      # SSH 远程调试（tmate），自动进入 make menuconfig
-      - name: SSH 远程调试（tmate）进入 menuconfig
-        if: ${{ github.event.inputs.manual_config == 'y' }}
-        uses: mxschmitt/action-tmate@v3
         
       - name: Generate configuration file
         run: make defconfig
