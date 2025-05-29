@@ -64,7 +64,12 @@ jobs:
 
       - name: Generate configuration file
         run: make defconfig
-
+        
+      # SSH 远程调试（tmate），自动进入 make menuconfig
+      - name: SSH 远程调试（tmate）进入 menuconfig
+        if: ${{ github.event.inputs.manual_config == 'y' }}
+        uses: mxschmitt/action-tmate@v3
+        
       - name: Download packages
         run: make download -j16
 
