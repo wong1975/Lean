@@ -10,6 +10,12 @@ name: OpenWrt-CI
 on:
   schedule:
     - cron: 0 20 * * *
+  workflow_dispatch:
+    inputs:
+      manual_config:
+        description: '需要进入 tmate SSH 手动 menuconfig 吗？'
+        required: false
+        default: 'n'
 
 permissions:
   contents: read
@@ -23,11 +29,6 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      # SSH 远程调试（tmate），自动进入 make menuconfig
-      - name: SSH 远程调试（tmate）进入 menuconfig
-        if: ${{ github.event.inputs.manual_config == 'y' }}
-        uses: mxschmitt/action-tmate@v3
-        
       - name: Space cleanup and Initialization environment
         env:
           DEBIAN_FRONTEND: noninteractive
@@ -67,9 +68,8 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      # SSH 远程调试（tmate），可手动 make menuconfig
-      - name: SSH 远程调试（tmate）进入 menuconfig
-        if: ${{ github.event.inputs.manual_config == 'y' }}
+      - name: SSH 远程调试（tmate）进入 cd source && make menuconfig
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.manual_config == 'y' }}
         uses: mxschmitt/action-tmate@v3
 
       - name: Upload .config
