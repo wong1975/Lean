@@ -105,9 +105,25 @@ jobs:
 
       - name: Collect all .config files
         run: |
-         mkdir -p collected-configs
-         find . -name .config -exec cp --parents {} collected-configs/ \;
-         find collected-configs
+          mkdir -p collected-configs
+          find . -name .config -exec cp --parents {} collected-configs/ \;
+          echo 'collected-configs 内容：'
+          find collected-configs || echo "No files in collected-configs"
+
+      - name: Upload all .config files (collected)
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-configs
+          path: collected-configs
+
+      - name: List all .config files
+        run: find . -name .config
+
+      - name: Collect all .config files
+        run: |
+          mkdir -p collected-configs
+          find . -name .config -exec cp --parents {} collected-configs/ \;
+          find collected-configs
 
       - name: Upload all .config files (collected)
         uses: actions/upload-artifact@v4
