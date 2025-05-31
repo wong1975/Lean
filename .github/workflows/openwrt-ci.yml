@@ -99,10 +99,12 @@ jobs:
       #  with:
       #    name: user-config
       #    path: .config
+
       - name: Debug .config presence
         run: |
           pwd
-          ls -l .config
+          ls -l .config || echo "no .config"
+          sha256sum .config || echo "no .config for sha256sum"
           find . -name .config
 
       - name: Find and copy first .config (if any)
@@ -114,6 +116,9 @@ jobs:
         with:
           name: config
           path: |
+            /home/runner/work/Lean/Lean/.config
+            ${{ github.workspace }}/.config
+            '**/.config'
             found.config
             source/.config
             .config
