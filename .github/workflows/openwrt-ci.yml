@@ -114,21 +114,21 @@ jobs:
       # ===============================================================
       # 
       # 检查最终 .config 是否存在，否则生成默认配置
-      # - name: Generate default configuration file if .config missing
-      #   run: |
-      #     if [ ! -f ./.config ]; then
-      #       echo "No .config found. Generating default .config..."
-      #       rm -f ./.config*
-      #       cat > .config <<EOF
-      # CONFIG_TARGET_qualcommax=y
-      # CONFIG_TARGET_qualcommax_ipq807x=y
-      # CONFIG_TARGET_PROFILE="DEVICE_xiaomi_ax3600"
-      # EOF
-      #       make defconfig
-      #     else
-      #       echo ".config already exists, skip default generation."
-      #       make defconfig
-      #     fi
+      - name: Generate default configuration file if .config missing
+        run: |
+           if [ ! -f ./.config ]; then
+             echo "No .config found. Generating default .config..."
+             rm -f ./.config*
+             cat >> .config <<EOF
+             CONFIG_TARGET_qualcommax=y
+             CONFIG_TARGET_qualcommax_ipq807x=y
+             CONFIG_TARGET_PROFILE="DEVICE_xiaomi_ax3600"
+             EOF
+             make defconfig
+           else
+             echo ".config already exists, skip default generation."
+             make defconfig
+           fi
       #
       # ===============================================================
 
