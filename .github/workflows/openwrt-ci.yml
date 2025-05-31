@@ -117,6 +117,7 @@ jobs:
             found.config
             source/.config
             .config
+            found.config
       # ===============================================================
       # 
       # 检查最终 .config 是否存在，否则生成默认配置
