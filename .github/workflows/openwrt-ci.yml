@@ -77,6 +77,11 @@ jobs:
             echo "No .config found in repo."
           fi
 
+      - name: Show current directory #确认你实际在什么目录
+        run: |
+          pwd
+          ls -l
+
       # tmate 环节自动使用 .config
       - name: SSH 远程调试（tmate）进入 cd source && make menuconfig
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.manual_config == 'y' }}
@@ -95,13 +100,13 @@ jobs:
       #    name: user-config
       #    path: .config
 
+      - name: Show .config in workspace
+        run: |
+          cd ${{ github.workspace }}
+          ls -l .config
+          
       - name: List all .config files
         run: find . -name .config
-
-      - name: Show main .config after tmate (if changed)
-        run: |
-          cd /work/Lean/Lean
-          ls -l .config
 
       - name: Collect all .config files
         run: |
