@@ -87,6 +87,9 @@ jobs:
       #  if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.manual_config == 'y' }}
       #  uses: mxschmitt/action-tmate@v3
 
+      - name: Find .config
+        run: find . -name .config
+
       # 如果经过 tmate 修改了 .config，则保存一份 artifact 供后续步骤与用户下载
       - name: Upload .config after tmate (if changed)
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.manual_config == 'y' }}
