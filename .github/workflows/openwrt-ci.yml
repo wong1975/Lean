@@ -119,17 +119,18 @@ jobs:
       - name: List all .config files
         run: find . -name .config
 
-      - name: Collect all .config files
+      - name: Find and copy first .config (if any)
         run: |
-          mkdir -p collected-configs
-          find . -name .config -exec cp --parents {} collected-configs/ \;
-          find collected-configs
-
-      - name: Upload all .config files (collected)
+          find . -name .config -print -exec cp {} ./found.config \; -quit
+          ls -l found.config || echo "No .config found"
+      - name: Upload .config from all possible locations
         uses: actions/upload-artifact@v4
         with:
-          name: all-configs
-          path: collected-configs
+          name: config
+          path: |
+            found.config
+            source/.config
+            .config
       # ===============================================================
       # 
       # 检查最终 .config 是否存在，否则生成默认配置
