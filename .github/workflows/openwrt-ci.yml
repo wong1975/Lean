@@ -68,48 +68,55 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
+      # 优先使用仓库目录下的 .config
+      - name: Use repo .config if exists
+        run: |
+          if [ -f "./.config" ]; then
+            echo "Found repo .config, using it."
+          else
+            echo "No .config found in repo."
+          fi
+
+      # tmate 环节自动使用 .config
       - name: SSH 远程调试（tmate）进入 cd source && make menuconfig
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.manual_config == 'y' }}
         uses: mxschmitt/action-tmate@v3
 
-      - name: Find and copy first .config (if any)
-        run: |
-          find . -name .config -print -exec cp {} ./found.config \; -quit
-          ls -l found.config || echo "No .config found"
+      # SSH tmate 远程调试（如果用户手动触发并需要menuconfig），并自动导入当前 .config
+      #- name: SSH 远程调试（tmate）进入 cd source && make menuconfig（可导入现有 .config）
+      #  if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.manual_config == 'y' }}
+      #  uses: mxschmitt/action-tmate@v3
 
-      - name: Upload .config from all possible locations
+      # 如果经过 tmate 修改了 .config，则保存一份 artifact 供后续步骤与用户下载
+      - name: Upload .config after tmate (if changed)
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.manual_config == 'y' }}
         uses: actions/upload-artifact@v4
         with:
-          name: config
-          path: |
-            found.config
-            source/.config
-            .config
+          name: user-config
+          path: .config
 
-      #- name: Generate configuration file
-      #  run: make defconfig
-
-      - name: Generate configuration file
+      # 检查最终 .config 是否存在，否则生成默认配置
+      - name: Generate default configuration file if .config missing
         run: |
-          rm -f ./.config*
-          touch ./.config
-
-          #
-          # 在 cat >> .config <<EOF 到 EOF 之间粘贴你的编译配置, 需注意缩进关系
-          # 例如:
-
-          cat >> .config <<EOF
-          CONFIG_TARGET_qualcommax=y
-          CONFIG_TARGET_qualcommax_ipq807x=y
-          CONFIG_TARGET_PROFILE="DEVICE_xiaomi_ax3600"
-          EOF
+          if [ ! -f ./.config ]; then
+            echo "No .config found. Generating default .config..."
+            rm -f ./.config*
+            touch ./.config
+            cat >> .config <<EOF
+            CONFIG_TARGET_qualcommax=y
+            CONFIG_TARGET_qualcommax_ipq807x=y
+            CONFIG_TARGET_PROFILE="DEVICE_xiaomi_ax3600"
+            EOF
+            sed -i 's/^[ \t]*//g' ./.config
+            make defconfig
+          else
+            echo ".config already exists, skip default generation."
+            make defconfig
+          fi
 
           #
           # ===============================================================
           # 
-
-          sed -i 's/^[ \t]*//g' ./.config
-          make defconfig
 
       - name: Download packages
         run: make download -j16
