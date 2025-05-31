@@ -94,12 +94,13 @@ jobs:
       #  with:
       #    name: user-config
       #    path: .config
+
       - name: List all .config files
         run: find . -name .config
 
-      - name: Upload .config after tmate (if changed)
+      - name: Show main .config after tmate (if changed)
         run: |
-          cd source
+          cd /work/Lean/Lean
           ls -l .config
 
       - name: Collect all .config files
