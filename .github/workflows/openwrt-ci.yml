@@ -94,16 +94,24 @@ jobs:
       #  with:
       #    name: user-config
       #    path: .config
+      - name: List all .config files
+        run: find . -name .config
 
-      - name: Upload all .config files recursively (robust)
+      - name: Upload .config after tmate (if changed)
+        run: |
+          cd source
+          ls -l .config
+
+      - name: Collect all .config files
+        run: |
+          mkdir -p collected-configs
+          find . -name .config -exec cp --parents {} collected-configs/ \;
+
+      - name: Upload all .config files (collected)
         uses: actions/upload-artifact@v4
         with:
           name: all-configs
-          path: |
-            .config
-            */*/.config
-            */*/*/.config
-            */*/*/*/.config
+          path: collected-configs
       # ===============================================================
       # 
       # 检查最终 .config 是否存在，否则生成默认配置
