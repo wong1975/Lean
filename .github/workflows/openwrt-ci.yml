@@ -100,18 +100,14 @@ jobs:
       #    name: user-config
       #    path: .config
 
-      - name: Show .config in workspace
-        run: |
-          cd ${{ github.workspace }}
-          ls -l .config
-          
       - name: List all .config files
         run: find . -name .config
 
       - name: Collect all .config files
         run: |
-          mkdir -p collected-configs
-          find . -name .config -exec cp --parents {} collected-configs/ \;
+         mkdir -p collected-configs
+         find . -name .config -exec cp --parents {} collected-configs/ \;
+         find collected-configs
 
       - name: Upload all .config files (collected)
         uses: actions/upload-artifact@v4
