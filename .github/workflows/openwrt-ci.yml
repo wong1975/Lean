@@ -103,21 +103,18 @@ jobs:
       - name: List all .config files
         run: find . -name .config
 
-      - name: Collect all .config files
+      - name: Collect all .config files (no recursion)
         run: |
           mkdir -p collected-configs
-          find . -name .config -exec cp --parents {} collected-configs/ \;
+          find . -path ./collected-configs -prune -o -name .config -exec cp --parents {} collected-configs/ \;
           echo 'collected-configs 内容：'
-          find collected-configs || echo "No files in collected-configs"
+          find collected-configs
 
       - name: Upload all .config files (collected)
         uses: actions/upload-artifact@v4
         with:
           name: all-configs
           path: collected-configs
-
-      - name: List all .config files
-        run: find . -name .config
 
       - name: Find and copy first .config (if any)
         run: |
