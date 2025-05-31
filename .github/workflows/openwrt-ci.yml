@@ -99,22 +99,11 @@ jobs:
       #  with:
       #    name: user-config
       #    path: .config
-
-      - name: List all .config files
-        run: find . -name .config
-
-      - name: Collect all .config files (no recursion)
+      - name: Debug .config presence
         run: |
-          mkdir -p collected-configs
-          find . -path ./collected-configs -prune -o -name .config -exec cp --parents {} collected-configs/ \;
-          echo 'collected-configs 内容：'
-          find collected-configs
-
-      - name: Upload all .config files (collected)
-        uses: actions/upload-artifact@v4
-        with:
-          name: all-configs
-          path: collected-configs
+          pwd
+          ls -l .config
+          find . -name .config
 
       - name: Find and copy first .config (if any)
         run: |
