@@ -87,8 +87,25 @@ jobs:
       #  if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.manual_config == 'y' }}
       #  uses: mxschmitt/action-tmate@v3
 
-      - name: Find .config
+      - name: List all .config files
         run: find . -name .config
+        
+      - name: Upload all .config files (recursively)
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-configs
+          path: '**/.config'
+
+      - name: Collect all .config files
+        run: |
+          mkdir -p collected-configs
+          find . -name .config -exec cp --parents {} collected-configs/ \;
+
+      - name: Upload all .config files (collected)
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-configs
+          path: collected-configs
 
       # 如果经过 tmate 修改了 .config，则保存一份 artifact 供后续步骤与用户下载
       #- name: Upload .config after tmate (if changed)
