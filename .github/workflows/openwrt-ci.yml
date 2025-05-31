@@ -95,16 +95,15 @@ jobs:
       #    name: user-config
       #    path: .config
 
-      - name: List all .config files (for debug)
-        run: find . -name .config
-
-      - name: Upload all .config files recursively
+      - name: Upload all .config files recursively (robust)
         uses: actions/upload-artifact@v4
         with:
           name: all-configs
           path: |
             .config
-            **/.config
+            */*/.config
+            */*/*/.config
+            */*/*/*/.config
       # ===============================================================
       # 
       # 检查最终 .config 是否存在，否则生成默认配置
