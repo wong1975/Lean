@@ -12,8 +12,8 @@ on:
   push:
     branches:
       - master         # 当 master 分支有 push 时触发
-  schedule:
-    - cron: 30 19 * * * # 每天UTC时间19:30自动触发（北京时间+8为03:30）
+  #schedule:
+  #  - cron: 30 19 * * * # 每天UTC时间19:30自动触发（北京时间+8为03:30）
 
 jobs:
 
